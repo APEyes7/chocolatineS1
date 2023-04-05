@@ -1,0 +1,75 @@
+name: GitHub Actions Demo
+
+on:
+  push:
+    branches-ignore:
+      - 'ga-ignore-* '
+  pull_request:
+    branches-ignore:
+      - 'ga-ignore-*'
+
+env:
+  MIRROR_URL: git@github.com:Baguel/test.git
+  EXECUTABLES: 101pong
+  
+jobs:
+  chech_coding_style:
+    runs-on:  ubuntu-latest
+    container:  ghcr.io/epitech/coding-style-checker:latest
+    steps:
+      - name: Check coding style
+        uses: actions/checkout@v3
+      - run:  |
+          check.sh $(pwd) $(pwd)
+          if  [ -s  $coding-style-reports.log ]
+          then
+            exit 0
+          else
+            while read line
+            do
+              tab=(${line//:/ })
+              ya=(${tab[0]})
+              tob=(${ya//// })
+              echo "::error title=${tab[2]} coding style error: ${tob[1]#L${tab[1]}::${tab[3]}
+            done < coding-style-reports.log
+            exit 0
+          fi
+  check_program_compilation:
+    runs-on:  ubuntu-latest
+    container:  epitechcontent/epitech-docker
+    steps:
+      - name: check compilation
+        uses: actions/checkout@v3
+      - run:  |
+          make
+          make clean
+          ls > oyoy
+          while read line
+          do
+            if [ "$line" =  "$EXECUTABLES" ]
+            then
+              exit 0
+            fi
+          done < oyoy
+          exit 1
+  run_test:
+    runs-on:  ubuntu-latest
+    container:  epitechcontent/epitest-docker
+    steps:
+      - name: run test
+        uses: actions/checkout@v3
+      - run:  |
+          make tests_run
+
+  push_to_mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url:
+            ${{ env.MIRROR_URL }}
+          ssh_private_key:
+            ${{ secrets.PRIVATE_KEY }}
