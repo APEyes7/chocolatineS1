@@ -10,7 +10,7 @@ on:
 
 env:
   MIRROR_URL: github.com/EpitechPromo2027/B-DOP-200-COT-2-1-chocolatine-shalom.dosseh
-  EXECUTABLES: solver
+  EXECUTABLES: guess
 
 jobs:
   check_coding_style:
@@ -29,6 +29,7 @@ jobs:
           message: |
             ## Coding Style Errors
             ${{ steps.check_coding_style.outputs.result }}
+
   check_program_compilation:
     runs-on: epitechcontent/epitest-docker
     needs: [check_coding_style]
