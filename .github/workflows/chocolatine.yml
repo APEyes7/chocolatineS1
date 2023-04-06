@@ -1,0 +1,50 @@
+name: Chocolating
+
+on:
+  push:
+    branches-ignore:
+      - 'ga-ignore-*'
+  pull_request:
+    branches-ignore:
+      - 'ga-ignore-*'
+
+env:
+  MIRROR_URL: github.com/EpitechPromo2027/B-DOP-200-COT-2-1-chocolatine-shalom.dosseh
+  EXECUTABLES: solver
+
+jobs:
+  check_coding_style:
+    runs-on: ubuntu-latest
+    needs: []
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Check coding style
+        run: |
+          docker run --rm -v $(pwd):$(pwd) -w $(pwd) ghcr.io/epitech/coding-style-checker:latest check.sh $(pwd) $(pwd)
+      - name: Display errors
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@v2.1.1
+        with:
+          message: |
+            ## Coding Style Errors
+            ${{ steps.check_coding_style.outputs.result }}
+  check_program_compilation:
+    runs-on: epitechcontent/epitest-docker
+    needs: [check_coding_style]
+    timeout-minutes: 3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Make
+        run: make
+      - name: Make Clean
+        run: make clean
+      - name: Verify executables
+        run: |
+          for executable in $(echo $EXECUTABLES | tr ',' ' '); do
+            if [ ! -x "$executable" ]; then
+              echo "Executable $executable not found or not executable"
+              exit 1
+            fi
+          done
